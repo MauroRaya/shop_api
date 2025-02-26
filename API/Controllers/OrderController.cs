@@ -21,4 +21,21 @@ public class OrderController : ControllerBase
         var orders = await _orderService.GetOrders();
         return Ok(orders);
     }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(
+        [FromRoute] int id)
+    {
+        var orders = await _orderService.GetOrderById(id);
+        return Ok(orders);
+    }
+
+    [HttpPost("{orderId}")]
+    public async Task<IActionResult> AddProductToOrder(
+        [FromRoute] int orderId,
+        [FromBody] Product product)
+    {
+        await _orderService.AddProduct(orderId, product);
+        return Ok();
+    }
 }
