@@ -31,20 +31,22 @@ public class OrderService
         var products = await _productRepository.GetProducts();
         
         if (!products.Contains(product))
-            throw new Exception("Product already exists");
+            throw new Exception();
         
         var order = await _orderRepository.GetOrderById(orderId);
              
         if (order is null)
-            throw new Exception("Order already exists");
+            throw new Exception();
         
         order.Products.Add(product);
     }
 
-    public async Task FinishShopping(Order order)
+    public async Task FinishOrder(int orderId)
     {
-        if (order.Products.Count == 0)
-            throw new Exception("No products have been added");
+        var order = await _orderRepository.GetOrderById(orderId);
+        
+        if (order is null || order.Products.Count == 0)
+            throw new Exception();
         
         await _orderRepository.AddOrder(order);
     }

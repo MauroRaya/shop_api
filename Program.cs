@@ -1,4 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using shop_api.Application.Services;
 using shop_api.Infrastructure.Contexts;
+using shop_api.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +12,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    )
+    options.UseSqlite("Data Source=app.db"));
+
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<ProductRepository>();
+
+builder.Services.AddScoped<OrderService>();
 
 var app = builder.Build();
 

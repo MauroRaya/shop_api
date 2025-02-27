@@ -5,7 +5,7 @@ using shop_api.Domain.Entities;
 namespace shop_api.API.Controllers;
 
 [ApiController]
-[Route("api/controller")]
+[Route("api/order")]
 public class OrderController : ControllerBase
 {
     private readonly OrderService _orderService;
@@ -30,12 +30,20 @@ public class OrderController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpPost("{orderId}")]
+    [HttpPost("product/{orderId}")]
     public async Task<IActionResult> AddProductToOrder(
         [FromRoute] int orderId,
         [FromBody] Product product)
     {
         await _orderService.AddProduct(orderId, product);
+        return Ok();
+    }
+    
+    [HttpPost("finish/{orderId}")]
+    public async Task<IActionResult> FinishOrder(
+        [FromRoute] int orderId)
+    {
+        await _orderService.FinishOrder(orderId);
         return Ok();
     }
 }
