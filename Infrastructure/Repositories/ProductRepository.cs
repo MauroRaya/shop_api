@@ -13,23 +13,23 @@ public class ProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetProducts()
+    public async Task<List<Product>> GetProductsAsync()
     {
         return await _context.Products.ToListAsync();
     }
 
-    public async Task<Product?> GetProductById(int id)
+    public async Task<Product?> GetProductByIdAsync(int id)
     {
         return await _context.Products.FindAsync(id);
     }
 
-    public async Task AddProduct(Product incoming)
+    public async Task AddProductAsync(Product incoming)
     {
         await _context.Products.AddAsync(incoming);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateProduct(int id, Product incoming)
+    public async Task UpdateProductAsync(int id, Product incoming)
     {
         var found = await _context.Products.FindAsync(id);
 
@@ -40,7 +40,7 @@ public class ProductRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteProduct(int id)
+    public async Task DeleteProductAsync(int id)
     {
         var found = await _context.Products.FindAsync(id);
         

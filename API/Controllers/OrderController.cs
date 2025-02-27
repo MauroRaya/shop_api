@@ -16,34 +16,51 @@ public class OrderController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> GetOrdersAsync()
     {
-        var orders = await _orderService.GetOrders();
+        var orders = await _orderService.GetOrdersAsync();
         return Ok(orders);
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(
+    public async Task<IActionResult> GetOrderByIdAsync(
         [FromRoute] int id)
     {
-        var orders = await _orderService.GetOrderById(id);
+        var orders = await _orderService.GetOrderByIdAsync(id);
         return Ok(orders);
     }
 
-    [HttpPost("product/{orderId}")]
-    public async Task<IActionResult> AddProductToOrder(
+    [HttpPost("{orderId}/product/{productId}")]
+    public async Task<IActionResult> AddProductToOrderAsync(
         [FromRoute] int orderId,
-        [FromBody] Product product)
+        [FromRoute] int productId)
     {
-        await _orderService.AddProduct(orderId, product);
+        await _orderService.AddProductToOrderAsync(orderId, productId);
         return Ok();
     }
     
     [HttpPost("finish/{orderId}")]
-    public async Task<IActionResult> FinishOrder(
+    public async Task<IActionResult> FinishOrderAsync(
         [FromRoute] int orderId)
     {
-        await _orderService.FinishOrder(orderId);
+        await _orderService.FinishOrderAsync(orderId);
+        return Ok();
+    }
+
+    [HttpDelete("{orderId}/product/{productId}")]
+    public async Task<IActionResult> RemoveProductFromOrderAsync(
+        [FromRoute] int orderId,
+        [FromRoute] int productId)
+    {
+        await _orderService.RemoveProductFromOrderAsync(orderId, productId);
+        return Ok();
+    }
+    
+    [HttpDelete("{orderId}")]
+    public async Task<IActionResult> DeleteOrderAsync(
+        [FromRoute] int orderId)
+    {
+        await _orderService.DeleteOrderAsync(orderId);
         return Ok();
     }
 }

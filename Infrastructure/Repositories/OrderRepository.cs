@@ -13,38 +13,27 @@ public class OrderRepository
         _context = context;
     }
 
-    public async Task<List<Order>> GetOrders()
+    public async Task<List<Order>> GetOrdersAsync()
     {
         return await _context.Orders
             .Include(o => o.Products)
             .ToListAsync();
     }
 
-    public async Task<Order?> GetOrderById(int id)
+    public async Task<Order?> GetOrderByIdAsync(int id)
     {
         return await _context.Orders
             .Include(o => o.Products)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
     
-    public async Task AddOrder(Order incoming)
+    public async Task AddOrderAsync(Order incoming)
     {
         await _context.Orders.AddAsync(incoming);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateOrder(int id, Order incoming)
-    {
-        var found = await _context.Orders.FindAsync(id);
-
-        if (found is null)
-            return;
-        
-        _context.Entry(found).CurrentValues.SetValues(incoming);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteOrder(int id)
+    public async Task DeleteOrderAsync(int id)
     {
         var found = await _context.Orders.FindAsync(id);
         
