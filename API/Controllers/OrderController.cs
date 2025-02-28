@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using shop_api.Application.Services;
-using shop_api.Domain.Entities;
 
 namespace shop_api.API.Controllers;
 
@@ -18,16 +17,16 @@ public class OrderController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetOrdersAsync()
     {
-        var orders = await _orderService.GetOrdersAsync();
-        return Ok(orders);
+        var result = await _orderService.GetOrdersAsync();
+        return StatusCode(result.StatusCode, result);
     }
     
     [HttpGet("{id}")]
     public async Task<IActionResult> GetOrderByIdAsync(
         [FromRoute] int id)
     {
-        var orders = await _orderService.GetOrderByIdAsync(id);
-        return Ok(orders);
+        var result = await _orderService.GetOrderByIdAsync(id);
+        return StatusCode(result.StatusCode, result);
     }
 
     [HttpPost("{orderId}/product/{productId}")]
@@ -35,16 +34,16 @@ public class OrderController : ControllerBase
         [FromRoute] int orderId,
         [FromRoute] int productId)
     {
-        await _orderService.AddProductToOrderAsync(orderId, productId);
-        return Ok();
+        var result = await _orderService.AddProductToOrderAsync(orderId, productId);
+        return StatusCode(result.StatusCode, result);
     }
     
     [HttpPost("finish/{orderId}")]
     public async Task<IActionResult> FinishOrderAsync(
         [FromRoute] int orderId)
     {
-        await _orderService.FinishOrderAsync(orderId);
-        return Ok();
+        var result = await _orderService.FinishOrderAsync(orderId);
+        return StatusCode(result.StatusCode, result);
     }
 
     [HttpDelete("{orderId}/product/{productId}")]
@@ -52,15 +51,15 @@ public class OrderController : ControllerBase
         [FromRoute] int orderId,
         [FromRoute] int productId)
     {
-        await _orderService.RemoveProductFromOrderAsync(orderId, productId);
-        return Ok();
+        var result = await _orderService.RemoveProductFromOrderAsync(orderId, productId);
+        return StatusCode(result.StatusCode, result);
     }
     
     [HttpDelete("{orderId}")]
     public async Task<IActionResult> DeleteOrderAsync(
         [FromRoute] int orderId)
     {
-        await _orderService.DeleteOrderAsync(orderId);
-        return Ok();
+        var result = await _orderService.DeleteOrderAsync(orderId);
+        return StatusCode(result.StatusCode, result);
     }
 }

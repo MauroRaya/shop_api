@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using shop_api.Domain.Entities;
 
-namespace shop_api.Infrastructure.Contexts;
+namespace shop_api.Infra.Contexts;
 
 public class AppDbContext : DbContext
 {

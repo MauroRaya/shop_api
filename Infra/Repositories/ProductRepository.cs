@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using shop_api.Domain.Entities;
-using shop_api.Infrastructure.Contexts;
+using shop_api.Infra.Contexts;
 
-namespace shop_api.Infrastructure.Repositories;
+namespace shop_api.Infra.Repositories;
 
 public class ProductRepository
 {

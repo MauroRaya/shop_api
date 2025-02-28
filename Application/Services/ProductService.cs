@@ -1,4 +1,4 @@
-﻿using shop_api.Infrastructure.Repositories;
+﻿using shop_api.Infra.Repositories;
 
 namespace shop_api.Application.Services;
 
