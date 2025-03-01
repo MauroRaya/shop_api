@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using shop_api.API.Common;
+using shop_api.Common;
 using shop_api.Domain.Entities;
 using shop_api.Infra.Repositories;
 
@@ -11,132 +11,88 @@ public class OrderService
     private readonly OrderRepository _orderRepository;
     private readonly ProductRepository _productRepository;
 
-    public OrderService(
-        OrderRepository orderRepository,
-        ProductRepository productRepository)
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
     }
     
-    public async Task<Result<IEnumerable<Order>>> GetOrdersAsync()
+    public async Task<ICustomResult> GetOrdersAsync()
     {
-        try
-        {
-            var orders = await _orderRepository.GetOrdersAsync();
-            
-            return Result<IEnumerable<Order>>
-                .Success(StatusCodes.Status200OK, "Order fetched successfully", orders);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<IEnumerable<Order>>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        var orders = await _orderRepository.GetOrdersAsync();
+        
+        return orders.Any() 
+            ? ResponseFactory.Success(orders) 
+            : ResponseFactory.Failure(404, "Orders are empty");
     }
 
-    public async Task<Result<Order>> GetOrderByIdAsync(int id)
+    public async Task<ICustomResult> GetOrderByIdAsync(int id)
     {
-        try
-        {
-            var order = await _orderRepository.GetOrderByIdAsync(id);
+        var order = await _orderRepository.GetOrderByIdAsync(id);
 
-            return order is null
-                ? Result<Order>.Failure(StatusCodes.Status404NotFound, "Order not found")
-                : Result<Order>.Success(StatusCodes.Status200OK, "Order fetched successfully", order);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<Order>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        return order is null
+            ? ResponseFactory.Failure(404, "Order not found")
+            : ResponseFactory.Success(order);
     }
     
-    public async Task<Result<Product>> AddProductToOrderAsync(int orderId, int productId)
+    public async Task<ICustomResult> CreateOrderAsync(Order order)
     {
-        try
-        {
-            var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            var product = await _productRepository.GetProductByIdAsync(productId);
-
-            if (order is null)
-                return Result<Product>.Failure(StatusCodes.Status404NotFound, "Order not found");
-        
-            if (product is null)
-                return Result<Product>.Failure(StatusCodes.Status404NotFound, "Product not found");
-        
-            order.Products.Add(product);
-            return Result<Product>.Success(StatusCodes.Status201Created, $"Product added to order with ID {orderId}", product);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<Product>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        await _orderRepository.AddOrderAsync(order);
+        return ResponseFactory.Success(order);
     }
-
-    public async Task<Result<Order>> FinishOrderAsync(int orderId)
+    
+    public async Task<ICustomResult> AddProductToOrderAsync(int orderId, int productId)
     {
-        try
-        {
-            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order is null) 
+            return ResponseFactory.Failure(404, "Order not found");
         
-            if (order is null)
-                return Result<Order>.Failure(StatusCodes.Status404NotFound, "Order not found");
+        var product = await _productRepository.GetProductByIdAsync(productId);
+        if (product is null) 
+            return ResponseFactory.Failure(404, "Product not found");
         
-            if (order.Products.Count.Equals(0))
-                return Result<Order>.Failure(StatusCodes.Status400BadRequest, "Cannot finish an empty order");
+        order.Products.Add(product);
+        await _orderRepository.UpdateOrderAsync(order);
         
-            await _orderRepository.AddOrderAsync(order);
-            return Result<Order>.Success(StatusCodes.Status201Created, "Order created successfully", order);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<Order>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        return ResponseFactory.Success(order);
     }
-
-    public async Task<Result<Product>> RemoveProductFromOrderAsync(int orderId, int productId)
+    
+    public async Task<ICustomResult> RemoveProductFromOrderAsync(int orderId, int productId)
     {
-        try
-        {
-            var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            var product = await _productRepository.GetProductByIdAsync(productId);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order is null) 
+            return ResponseFactory.Failure(404, "Order not found");
         
-            if (order is null)
-                return Result<Product>.Failure(StatusCodes.Status404NotFound, "Order not found");
+        var product = order.Products.FirstOrDefault(p => p.Id == productId);
+        if (product is null) 
+            return ResponseFactory.Failure(400, "Product not found in order");
         
-            if (product is null)
-                return Result<Product>.Failure(StatusCodes.Status404NotFound, "Product not found");
+        order.Products.Remove(product);
+        await _orderRepository.UpdateOrderAsync(order);
         
-            order.Products.Remove(product);
-            return Result<Product>.Success(StatusCodes.Status200OK, $"Product removed from order with ID {orderId}", product);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<Product>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        return ResponseFactory.Success(order);
     }
-
-    public async Task<Result<Order>> DeleteOrderAsync(int orderId)
+    
+    public async Task<ICustomResult> FinishOrderAsync(int orderId)
     {
-        try
-        {
-            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order is null)
+            return ResponseFactory.Failure(404, "Order not found");
         
-            if (order is null)
-                return Result<Order>.Failure(StatusCodes.Status404NotFound, "Order not found");
-
-            await _orderRepository.DeleteOrderAsync(orderId);
-            return Result<Order>.Success(StatusCodes.Status200OK, "Order deleted successfully", order);
-        }
-        catch (RepositoryException ex)
-        {
-            return Result<Order>
-                .Failure(StatusCodes.Status500InternalServerError, ex.Message);
-        }
+        order.IsCompleted = true;
+        await _orderRepository.UpdateOrderAsync(order);
+        
+        return ResponseFactory.Success(order);
+    }
+    
+    public async Task<ICustomResult> DeleteOrderAsync(int orderId)
+    {
+        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        if (order is null) 
+            return ResponseFactory.Failure(404, "Order not found");
+        
+        await _orderRepository.DeleteOrderAsync(order);
+        return ResponseFactory.Success(order);
     }
 }
 

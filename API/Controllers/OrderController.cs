@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using shop_api.Application.Services;
+using shop_api.Common;
+using shop_api.Domain.Entities;
 
 namespace shop_api.API.Controllers;
 
@@ -8,25 +10,54 @@ namespace shop_api.API.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly OrderService _orderService;
-    
+
     public OrderController(OrderService orderService)
     {
         _orderService = orderService;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetOrdersAsync()
     {
         var result = await _orderService.GetOrdersAsync();
-        return StatusCode(result.StatusCode, result);
+
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetOrderByIdAsync(
         [FromRoute] int id)
     {
         var result = await _orderService.GetOrderByIdAsync(id);
-        return StatusCode(result.StatusCode, result);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrderAsync(
+        [FromBody] Order order)
+    {
+        var result = await _orderService.CreateOrderAsync(order);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
 
     [HttpPost("{orderId}/product/{productId}")]
@@ -35,31 +66,59 @@ public class OrderController : ControllerBase
         [FromRoute] int productId)
     {
         var result = await _orderService.AddProductToOrderAsync(orderId, productId);
-        return StatusCode(result.StatusCode, result);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
-    
-    [HttpPost("finish/{orderId}")]
+
+    [HttpPost("{orderId}/finish")]
     public async Task<IActionResult> FinishOrderAsync(
         [FromRoute] int orderId)
     {
         var result = await _orderService.FinishOrderAsync(orderId);
-        return StatusCode(result.StatusCode, result);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
 
     [HttpDelete("{orderId}/product/{productId}")]
     public async Task<IActionResult> RemoveProductFromOrderAsync(
-        [FromRoute] int orderId,
+        [FromRoute] int orderId, 
         [FromRoute] int productId)
     {
         var result = await _orderService.RemoveProductFromOrderAsync(orderId, productId);
-        return StatusCode(result.StatusCode, result);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
-    
+
     [HttpDelete("{orderId}")]
     public async Task<IActionResult> DeleteOrderAsync(
         [FromRoute] int orderId)
     {
         var result = await _orderService.DeleteOrderAsync(orderId);
-        return StatusCode(result.StatusCode, result);
+        
+        if (result is ProblemDetailsResponse)
+        {
+            var problemDetails = (ProblemDetails)result.GetResult();
+            return StatusCode((int)problemDetails.Status, problemDetails);
+        }
+        
+        return Ok(result);
     }
 }

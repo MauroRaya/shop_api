@@ -1,80 +1,41 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using shop_api.Common;
 using shop_api.Domain.Entities;
 using shop_api.Infra.Contexts;
 
 namespace shop_api.Infra.Repositories;
 
-public class RepositoryException : Exception
-{
-    public RepositoryException(string message, Exception innerException) : base(message, innerException) {}
-}
-
 public class OrderRepository
 {
     private readonly AppDbContext _context;
-
+    
     public OrderRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<List<Order>> GetOrdersAsync()
+    public async Task<List<Order>> GetOrdersAsync() 
+        => await _context.Orders.Include(o => o.Products).ToListAsync();
+    
+    public async Task<Order?> GetOrderByIdAsync(int id) 
+        => await _context.Orders.Include(o => o.Products).FirstOrDefaultAsync(o => o.Id == id);
+    
+    public async Task AddOrderAsync(Order order)
     {
-        try
-        {
-            return await _context.Orders
-                .Include(o => o.Products)
-                .ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new RepositoryException($"Error fetching orders", ex);
-        }
-
-    }
-
-    public async Task<Order?> GetOrderByIdAsync(int id)
-    {
-        try
-        {
-            return await _context.Orders
-                .Include(o => o.Products)
-                .FirstOrDefaultAsync(o => o.Id == id);
-        }
-        catch (Exception ex)
-        {
-            throw new RepositoryException($"Error fetching order with ID {id}", ex);
-        }
+        await _context.Orders.AddAsync(order);
+        await _context.SaveChangesAsync();
     }
     
-    public async Task AddOrderAsync(Order incoming)
+    public async Task UpdateOrderAsync(Order order)
     {
-        try
-        {
-            await _context.Orders.AddAsync(incoming);
-            await _context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new RepositoryException($"Error adding new order", ex);
-        }
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync();
     }
-
-    public async Task DeleteOrderAsync(int id)
+    
+    public async Task DeleteOrderAsync(Order order)
     {
-        try
-        {
-            var found = await _context.Orders.FindAsync(id);
-        
-            if (found is null)
-                return;
-        
-            _context.Orders.Remove(found);
-            await _context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new RepositoryException($"Error deleting order with ID {id}", ex);
-        }
+        _context.Orders.Remove(order);
+        await _context.SaveChangesAsync();
     }
 }
