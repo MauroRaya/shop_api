@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using shop_api.Common;
 using shop_api.Domain.Entities;
+using shop_api.Domain.ViewModels;
 using shop_api.Infra.Contexts;
 
 namespace shop_api.Infra.Repositories;
@@ -26,9 +26,9 @@ public class ProductRepository
         await _context.SaveChangesAsync();
     }
     
-    public async Task UpdateProductAsync(Product product)
+    public async Task UpdateProductAsync(Product old, ProductViewModel updated)
     {
-        _context.Products.Update(product);
+        _context.Entry(old).CurrentValues.SetValues(updated);
         await _context.SaveChangesAsync();
     }
     

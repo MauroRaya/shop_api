@@ -26,8 +26,9 @@ public class OrderController : ControllerBase
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
-        return Ok(result);
+
+        var orders = (List<Order>)result.GetResult();
+        return Ok(orders);
     }
 
     [HttpGet("{id}")]
@@ -35,14 +36,15 @@ public class OrderController : ControllerBase
         [FromRoute] int id)
     {
         var result = await _orderService.GetOrderByIdAsync(id);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
-        return Ok(result);
+
+        var order = (Order)result.GetResult();
+        return Ok(order);
     }
 
     [HttpPost]
@@ -50,14 +52,15 @@ public class OrderController : ControllerBase
         [FromBody] Order order)
     {
         var result = await _orderService.CreateOrderAsync(order);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
-        return Ok(result);
+
+        var createdOrder = (Order)result.GetResult();
+        return CreatedAtAction(nameof(GetOrderByIdAsync), new { id = createdOrder.Id }, createdOrder);
     }
 
     [HttpPost("{orderId}/product/{productId}")]
@@ -66,13 +69,13 @@ public class OrderController : ControllerBase
         [FromRoute] int productId)
     {
         var result = await _orderService.AddProductToOrderAsync(orderId, productId);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
+
         return Ok(result);
     }
 
@@ -81,13 +84,13 @@ public class OrderController : ControllerBase
         [FromRoute] int orderId)
     {
         var result = await _orderService.FinishOrderAsync(orderId);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
+
         return Ok(result);
     }
 
@@ -97,13 +100,13 @@ public class OrderController : ControllerBase
         [FromRoute] int productId)
     {
         var result = await _orderService.RemoveProductFromOrderAsync(orderId, productId);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
+
         return Ok(result);
     }
 
@@ -112,13 +115,14 @@ public class OrderController : ControllerBase
         [FromRoute] int orderId)
     {
         var result = await _orderService.DeleteOrderAsync(orderId);
-        
+
         if (result is ProblemDetailsResponse)
         {
             var problemDetails = (ProblemDetails)result.GetResult();
             return StatusCode((int)problemDetails.Status, problemDetails);
         }
-        
-        return Ok(result);
+
+        var removedOrder = (Order)result.GetResult();
+        return Ok(removedOrder);
     }
 }

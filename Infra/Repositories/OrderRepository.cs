@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using shop_api.Common;
+﻿using Microsoft.EntityFrameworkCore;
 using shop_api.Domain.Entities;
 using shop_api.Infra.Contexts;
 

@@ -44,10 +44,12 @@ public class OrderService
     public async Task<ICustomResult> AddProductToOrderAsync(int orderId, int productId)
     {
         var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        
         if (order is null) 
             return ResponseFactory.Failure(404, "Order not found");
         
         var product = await _productRepository.GetProductByIdAsync(productId);
+        
         if (product is null) 
             return ResponseFactory.Failure(404, "Product not found");
         
@@ -60,10 +62,12 @@ public class OrderService
     public async Task<ICustomResult> RemoveProductFromOrderAsync(int orderId, int productId)
     {
         var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        
         if (order is null) 
             return ResponseFactory.Failure(404, "Order not found");
         
         var product = order.Products.FirstOrDefault(p => p.Id == productId);
+        
         if (product is null) 
             return ResponseFactory.Failure(400, "Product not found in order");
         
@@ -76,6 +80,7 @@ public class OrderService
     public async Task<ICustomResult> FinishOrderAsync(int orderId)
     {
         var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        
         if (order is null)
             return ResponseFactory.Failure(404, "Order not found");
         
@@ -88,6 +93,7 @@ public class OrderService
     public async Task<ICustomResult> DeleteOrderAsync(int orderId)
     {
         var order = await _orderRepository.GetOrderByIdAsync(orderId);
+        
         if (order is null) 
             return ResponseFactory.Failure(404, "Order not found");
         
