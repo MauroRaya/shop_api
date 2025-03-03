@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using shop_api.Application.Services;
-using shop_api.Common;
-using shop_api.Domain.Entities;
 using shop_api.Domain.ViewModels;
 
 namespace shop_api.API.Controllers;
@@ -22,14 +20,9 @@ public class ProductController : ControllerBase
     {
         var result = await _productService.GetProductsAsync();
 
-        if (result is ProblemDetailsResponse)
-        {
-            var problemDetails = (ProblemDetails)result.GetResult();
-            return StatusCode((int)problemDetails.Status, problemDetails);
-        }
-
-        var products = (List<Product>)result.GetResult();
-        return Ok(products);
+        return result.Match(
+            p => Ok(p),
+            err => BadRequest(err));
     }
 
     [HttpGet("{id}")]
@@ -38,14 +31,9 @@ public class ProductController : ControllerBase
     {
         var result = await _productService.GetProductByIdAsync(id);
 
-        if (result is ProblemDetailsResponse)
-        {
-            var problemDetails = (ProblemDetails)result.GetResult();
-            return StatusCode((int)problemDetails.Status, problemDetails);
-        }
-
-        var product = (Product)result.GetResult();
-        return Ok(product);
+        return result.Match(
+            p => Ok(p),
+            err => BadRequest(err));
     }
 
     [HttpPost]
@@ -53,15 +41,10 @@ public class ProductController : ControllerBase
         [FromBody] ProductViewModel product)
     {
         var result = await _productService.AddProductAsync(product);
-
-        if (result is ProblemDetailsResponse)
-        {
-            var problemDetails = (ProblemDetails)result.GetResult();
-            return StatusCode((int)problemDetails.Status, problemDetails);
-        }
-
-        var createdProduct = (Product)result.GetResult();
-        return CreatedAtAction(nameof(GetProductByIdAsync), new { id = createdProduct.Id }, createdProduct);
+        
+        return result.Match(
+            p => Ok(p),
+            err => BadRequest(err));
     }
 
     [HttpPut("{id}")]
@@ -71,14 +54,9 @@ public class ProductController : ControllerBase
     {
         var result = await _productService.UpdateProductAsync(id, updated);
 
-        if (result is ProblemDetailsResponse)
-        {
-            var problemDetails = (ProblemDetails)result.GetResult();
-            return StatusCode((int)problemDetails.Status, problemDetails);
-        }
-
-        var updatedProduct = (Product)result.GetResult();
-        return Ok(updatedProduct);
+        return result.Match(
+            p => Ok(p),
+            err => BadRequest(err));
     }
 
     [HttpDelete("{id}")]
@@ -87,13 +65,8 @@ public class ProductController : ControllerBase
     {
         var result = await _productService.DeleteProductAsync(id);
 
-        if (result is ProblemDetailsResponse)
-        {
-            var problemDetails = (ProblemDetails)result.GetResult();
-            return StatusCode((int)problemDetails.Status, problemDetails);
-        }
-
-        var removedProduct = (Product)result.GetResult();
-        return Ok(removedProduct);
+        return result.Match(
+            p => Ok(p),
+            err => BadRequest(err));
     }
 }

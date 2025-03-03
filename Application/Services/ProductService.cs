@@ -1,4 +1,5 @@
 ﻿using shop_api.Common;
+using shop_api.Domain.Entities;
 using shop_api.Domain.ViewModels;
 using shop_api.Infra.Repositories;
 
@@ -13,49 +14,28 @@ public class ProductService
         _productRepository = productRepository;
     }
 
-    public async Task<ICustomResult> GetProductsAsync()
+    public async Task<Result<List<Product>, Exception>> GetProductsAsync()
     {
-        var products = await _productRepository.GetProductsAsync();
-        
-        return products.Count.Equals(0)
-            ? ResponseFactory.Failure(404, "Products is empty")
-            : ResponseFactory.Success(products);
+        return await _productRepository.GetProductsAsync();
     }
 
-    public async Task<ICustomResult> GetProductByIdAsync(int id)
+    public async Task<Result<Product?, Exception>> GetProductByIdAsync(int id)
     {
-        var product = await _productRepository.GetProductByIdAsync(id);
-        
-        return product is null
-            ? ResponseFactory.Failure(404, "Products not found")
-            : ResponseFactory.Success(product);
+        return await _productRepository.GetProductByIdAsync(id);
     }
     
-    public async Task<ICustomResult> AddProductAsync(ProductViewModel incoming)
+    public async Task<Result<Product, Exception>> AddProductAsync(ProductViewModel incoming)
     {
-        await _productRepository.AddProductAsync(incoming.ToProduct());
-        return ResponseFactory.Success(incoming);
+        return await _productRepository.AddProductAsync(incoming.ToProduct());
     }
     
-    public async Task<ICustomResult> UpdateProductAsync(int id, ProductViewModel updated)
+    public async Task<Result<Product, Exception>> UpdateProductAsync(int id, ProductViewModel updated)
     {
-        var old = await _productRepository.GetProductByIdAsync(id);
-        
-        if (old is null)
-            return ResponseFactory.Failure(404, "Product not found");
-        
-        await _productRepository.UpdateProductAsync(old, updated);
-        return ResponseFactory.Success(updated);
+        return await _productRepository.UpdateProductAsync(id, updated.ToProduct());
     }
     
-    public async Task<ICustomResult> DeleteProductAsync(int id)
+    public async Task<Result<Product, Exception>> DeleteProductAsync(int id)
     {
-        var product = await _productRepository.GetProductByIdAsync(id);
-        
-        if (product is null)
-            return ResponseFactory.Failure(404, "Product not found");
-        
-        await _productRepository.DeleteProductAsync(product);
-        return ResponseFactory.Success(product);
+        return await _productRepository.DeleteProductAsync(id);
     }
 }

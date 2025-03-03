@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using shop_api.Common;
 using shop_api.Domain.Entities;
 using shop_api.Domain.ViewModels;
 using shop_api.Infra.Contexts;
@@ -14,27 +15,89 @@ public class ProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetProductsAsync() 
-        => await _context.Products.ToListAsync();
-    
-    public async Task<Product?> GetProductByIdAsync(int id) 
-        => await _context.Products.FindAsync(id);
-    
-    public async Task AddProductAsync(Product product)
+    public async Task<Result<List<Product>, Exception>> GetProductsAsync()
     {
-        await _context.Products.AddAsync(product);
-        await _context.SaveChangesAsync();
+        try
+        {
+            return await _context.Products.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+    }
+
+    public async Task<Result<Product?, Exception>> GetProductByIdAsync(int id)
+    {
+        try
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product is null)
+            {
+                return new Exception("Product not found");    
+            }
+            
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+    }
+
+    public async Task<Result<Product, Exception>> AddProductAsync(Product product)
+    {
+        try
+        {
+            await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
     }
     
-    public async Task UpdateProductAsync(Product old, ProductViewModel updated)
+    public async Task<Result<Product, Exception>> UpdateProductAsync(int id, Product updatedProduct)
     {
-        _context.Entry(old).CurrentValues.SetValues(updated);
-        await _context.SaveChangesAsync();
+        try
+        {
+            var productDb = await _context.Products.FindAsync(id);
+            if (productDb is null)
+            {
+                return new Exception("Product not found");    
+            }
+            
+            _context.Entry(productDb).CurrentValues.SetValues(updatedProduct);
+            await _context.SaveChangesAsync();
+
+            return updatedProduct;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
     }
     
-    public async Task DeleteProductAsync(Product product)
+    public async Task<Result<Product, Exception>> DeleteProductAsync(int id)
     {
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        try
+        {
+            var productDb = await _context.Products.FindAsync(id);
+            if (productDb is null)
+            {
+                return new Exception("Product not found");    
+            }
+            
+            _context.Products.Remove(productDb);
+            await _context.SaveChangesAsync();
+            
+            return productDb;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
     }
 }
