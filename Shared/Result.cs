@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace shop_api.Common;
+namespace shop_api.Shared;
 
 public readonly struct Result<TData, TError>
 {
@@ -30,8 +30,6 @@ public readonly struct Result<TData, TError>
         Func<TData, IActionResult> success,
         Func<TError, IActionResult> failure)
     {
-        return IsSuccess
-            ? success(Data!)
-            : failure(Error!);
+        return IsSuccess ? success(Data!) : failure(Error!);
     }
 }

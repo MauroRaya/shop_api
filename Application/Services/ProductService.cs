@@ -1,41 +1,126 @@
-﻿using shop_api.Common;
+﻿using shop_api.Shared;
 using shop_api.Domain.Entities;
-using shop_api.Domain.ViewModels;
-using shop_api.Infra.Repositories;
+using shop_api.Infra.UOW;
 
 namespace shop_api.Application.Services;
 
 public class ProductService
 {
-    private readonly ProductRepository _productRepository;
+    private readonly UnitOfWork _uow;
 
-    public ProductService(ProductRepository productRepository)
+    public ProductService(UnitOfWork uow)
     {
-        _productRepository = productRepository;
+        _uow = uow;
     }
 
     public async Task<Result<List<Product>, Exception>> GetProductsAsync()
     {
-        return await _productRepository.GetProductsAsync();
+        try
+        {
+            var productRepository = _uow.GetRepository<Product>();
+            return await productRepository.GetAsync();
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+        finally
+        {
+            _uow.Dispose();
+        }
     }
 
-    public async Task<Result<Product?, Exception>> GetProductByIdAsync(int id)
+    public async Task<Result<Product, Exception>> GetProductByIdAsync(int id)
     {
-        return await _productRepository.GetProductByIdAsync(id);
+        try
+        {
+            var productRepository = _uow.GetRepository<Product>();
+            var product = await productRepository.GetByIdAsync(id);
+            
+            if (product is null)
+                return new Exception("Product not found");   
+            
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+        finally
+        {
+            _uow.Dispose();
+        }
     }
     
-    public async Task<Result<Product, Exception>> AddProductAsync(ProductViewModel incoming)
+    public async Task<Result<Product, Exception>> AddProductAsync(Product product)
     {
-        return await _productRepository.AddProductAsync(incoming.ToProduct());
+        try
+        {
+            if (string.IsNullOrWhiteSpace(product.Name))
+                return new Exception("Product data is required");
+        
+            if (product.Price <= 0)
+                return new Exception("Product price cannot be less or equal to 0");
+        
+            var productRepository = _uow.GetRepository<Product>();
+            await productRepository.AddAsync(product);
+            await _uow.SaveChangesAsync();
+            
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+        finally
+        {
+            _uow.Dispose();
+        }
     }
     
-    public async Task<Result<Product, Exception>> UpdateProductAsync(int id, ProductViewModel updated)
+    public async Task<Result<Product, Exception>> UpdateProductAsync(Product product)
     {
-        return await _productRepository.UpdateProductAsync(id, updated.ToProduct());
+        try
+        {
+            if (string.IsNullOrWhiteSpace(product.Name))
+                return new Exception("Product data is required");
+        
+            if (product.Price <= 0)
+                return new Exception("Product price cannot be less or equal to 0");
+        
+            var productRepository = _uow.GetRepository<Product>();
+            productRepository.Update(product);
+            await _uow.SaveChangesAsync();
+
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+        finally
+        {
+            _uow.Dispose();
+        }
     }
     
-    public async Task<Result<Product, Exception>> DeleteProductAsync(int id)
+    public async Task<Result<Product, Exception>> DeleteProductAsync(Product product)
     {
-        return await _productRepository.DeleteProductAsync(id);
+        try
+        {
+            var productRepository = _uow.GetRepository<Product>();
+            productRepository.RemoveAsync(product);
+            await _uow.SaveChangesAsync();
+            
+            return product;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+        finally
+        {
+            _uow.Dispose();
+        }
     }
 }

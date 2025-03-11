@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using shop_api.Application.Services;
-using shop_api.Domain.ViewModels;
+using shop_api.Domain.Entities;
 
 namespace shop_api.API.Controllers;
 
@@ -8,7 +8,7 @@ namespace shop_api.API.Controllers;
 [Route("api/product")]
 public class ProductController : ControllerBase
 {
-        private readonly ProductService _productService;
+    private readonly ProductService _productService;
 
     public ProductController(ProductService productService)
     {
@@ -38,7 +38,7 @@ public class ProductController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> AddProductAsync(
-        [FromBody] ProductViewModel product)
+        [FromBody] Product product)
     {
         var result = await _productService.AddProductAsync(product);
         
@@ -47,23 +47,22 @@ public class ProductController : ControllerBase
             err => BadRequest(err));
     }
 
-    [HttpPut("{id}")]
+    [HttpPut()]
     public async Task<IActionResult> UpdateProductAsync(
-        [FromRoute] int id, 
-        [FromBody] ProductViewModel updated)
+        [FromBody] Product product)
     {
-        var result = await _productService.UpdateProductAsync(id, updated);
+        var result = await _productService.UpdateProductAsync(product);
 
         return result.Match(
             p => Ok(p),
             err => BadRequest(err));
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete()]
     public async Task<IActionResult> DeleteProductAsync(
-        [FromRoute] int id)
+        [FromBody] Product product)
     {
-        var result = await _productService.DeleteProductAsync(id);
+        var result = await _productService.DeleteProductAsync(product);
 
         return result.Match(
             p => Ok(p),
